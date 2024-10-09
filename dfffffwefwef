@@ -1,0 +1,46 @@
+from microbit import *
+import radio
+
+# Preset GPS position
+preset_lat = 34.052235  # Example Latitude
+preset_lon = -118.243683  # Example Longitude
+
+# Initialize radio for communication
+radio.on()
+radio.config(channel=7)  # Set a channel for radio communication
+
+# Function to estimate heading based on signals from four pins
+def estimate_heading(pin1, pin2, pin3, pin4):
+    # Read the signals from the pins (0 or 1)
+    signal1 = pin1.read_digital()
+    signal2 = pin2.read_digital()
+    signal3 = pin3.read_digital()
+    signal4 = pin4.read_digital()
+
+    # Placeholder heading estimation logic based on signals
+    if signal1 and not signal2 and not signal3 and not signal4:
+        return 0  # Heading north
+    elif not signal1 and signal2 and not signal3 and not signal4:
+        return 90  # Heading east
+    elif not signal1 and not signal2 and signal3 and not signal4:
+        return 180  # Heading south
+    elif not signal1 and not signal2 and not signal3 and signal4:
+        return 270  # Heading west
+    else:
+        return -1  # Undefined heading
+
+while True:
+    # Estimate heading from pin signals
+    heading = estimate_heading(pin0, pin1, pin2, pin3)
+
+    # Prepare the message to send
+    message = "{:.6f} {:.6f} {} {:.6f} {:.6f} {}".format(
+        preset_lat, preset_lon, heading,  # First set of values
+        preset_lat + 0.0001, preset_lon + 0.0001, heading  # Second set of values (for demo)
+    )
+
+    # Send data over radio
+    radio.send(message)
+
+    # Wait for a second before sending the next message
+    sleep(1000)
